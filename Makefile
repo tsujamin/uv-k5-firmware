@@ -8,6 +8,9 @@ ENABLE_OVERLAY := 1
 ENABLE_SWD := 0
 ENABLE_TX1750 := 1
 ENABLE_UART := 1
+ENABLE_MODEM := 1
+
+K5PROG_DEVICE := /dev/cu.usbserial-110
 
 BSP_DEFINITIONS := $(wildcard hardware/*/*.def)
 BSP_HEADERS := $(patsubst hardware/%,bsp/%,$(BSP_DEFINITIONS))
@@ -63,6 +66,9 @@ endif
 OBJS += app/generic.o
 OBJS += app/main.o
 OBJS += app/menu.o
+ifeq ($(ENABLE_MODEM),1)
+OBJS += app/modem.o
+endif
 OBJS += app/scanner.o
 ifeq ($(ENABLE_UART),1)
 OBJS += app/uart.o
@@ -146,6 +152,9 @@ endif
 ifeq ($(ENABLE_UART),1)
 CFLAGS += -DENABLE_UART
 endif
+ifeq ($(ENABLE_MODEM),1)
+CFLAGS += -DENABLE_MODEM
+endif
 LDFLAGS = -mcpu=cortex-m0 -nostartfiles -Wl,-T,firmware.ld
 
 ifeq ($(DEBUG),1)
@@ -174,6 +183,9 @@ debug:
 
 flash:
 	/opt/openocd/bin/openocd -c "bindto 0.0.0.0" -f interface/jlink.cfg -f dp32g030.cfg -c "write_image firmware.bin 0; shutdown;"
+
+k5prog: 
+	k5prog -F -YYY -b firmware.bin -p $(K5PROG_DEVICE) -v
 
 version.o: .FORCE
 

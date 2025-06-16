@@ -504,8 +504,8 @@ void BK4819_SetupAircopy(void)
 		| BK4819_REG_58_FSK_RX_GAIN_0
 		| BK4819_REG_58_FSK_RX_MODE_FSK_1200
 		| BK4819_REG_58_FSK_TX_MODE_FSK_1200
-		);// FSK Enable, FSK 1.2K RX Bandwidth, Preamble 0xAA or 0x55, RX Gain 0, RX Mode
-		  // (FSK1.2K, FSK2.4K Rx and NOAA SAME Rx), TX Mode FSK 1.2K and FSK 2.4K Tx
+		); // FSK Enable, FSK 1.2K RX Bandwidth, Preamble 0xAA or 0x55, RX Gain 0, RX Mode
+		   // (FSK1.2K, FSK2.4K Rx and NOAA SAME Rx), TX Mode FSK 1.2K and FSK 2.4K Tx
 	BK4819_WriteRegister(BK4819_REG_5C, 0
 		| 0x5625
 		| BK4819_REG_5C_FSK_ENABLE_CRC

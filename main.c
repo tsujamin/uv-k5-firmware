@@ -29,6 +29,9 @@
 #if defined(ENABLE_UART)
 #include "driver/uart.h"
 #endif
+#if defined(ENABLE_MODEM)
+#include "app/modem.h"
+#endif
 #include "helper/battery.h"
 #include "helper/boot.h"
 #include "misc.h"
@@ -70,6 +73,10 @@ void Main(void)
 #if defined(ENABLE_UART)
 	UART_Init();
 	UART_Send(Version, sizeof(Version));
+#endif
+
+#if defined(ENABLE_MODEM)
+	Modem_Init();
 #endif
 
 	// Not implementing authentic device checks
