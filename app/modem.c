@@ -45,8 +45,11 @@ BK4819_ModemParams gModemParameters = {
     .RxBandwidth    = BK4819_REG_58_FSK_RX_BANDWIDTH_FSK_1200,
     .TxMode         = BK4819_REG_58_FSK_TX_MODE_FSK_1200,
     .RxMode         = BK4819_REG_58_FSK_RX_MODE_FSK_1200,
-    .SyncBytes      = {0x55, 0x44, 0x33, 0x22}
+    .SyncBytes      = {0x55, 0x44, 0x33, 0x22},
+    .TxMode         = 0,
+    .RxMode         = 0, 
 };
+
 void Modem_Boot(void)
 {
     const char szMsg[] = "Modem_Boot()\r\n";
@@ -131,9 +134,34 @@ void UpdateParameter(KEY_Code_t Key)
     // gModemParameters.PreambleLength = Key << BK4819_REG_59_SHIFT_FSK_PREAMBLE_LENGTH;
     
     // Baud rate
+    // gModemParameters.BaudRate = ( Key == KEY_2) ? 2400 : 1200;
+    // BK4819_ConfigureFSK( &gModemParameters );
+    
+    // Tx Mode (3 bits, so map 0->7)
+    // if ( Key <= 0b111 )
+    // {
+    //     gModemParameters.TxMode = Key << BK4819_REG_58_SHIFT_FSK_TX_MODE;
+    //     BK4819_ConfigureFSK( &gModemParameters );
+    // }
 
-    gModemParameters.BaudRate = ( Key == KEY_2) ? 2400 : 1200;
-    BK4819_ConfigureFSK( &gModemParameters );
+    // Preamble Type
+    if ( Key <= 0b11 )
+    {
+        gModemParameters.PremableType = Key << BK4819_REG_58_SHIFT_FSK_PREAMBLE_TYPE;
+        BK4819_ConfigureFSK(&gModemParameters);
+    }
+
+    if (Key == KEY_8)
+    {
+        gModemParameters.InvertTx = 0;
+        BK4819_ConfigureFSK(&gModemParameters);
+    }
+    else if (Key == KEY_9)
+    {
+        gModemParameters.InvertTx = 1;
+        BK4819_ConfigureFSK(&gModemParameters);
+    }
+
     return;
 }
 

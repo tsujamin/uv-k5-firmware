@@ -1040,7 +1040,7 @@ void BK4819_ConfigureFSK(BK4819_ModemParams *Params)
 	BK4819_WriteRegister(BK4819_REG_70, 0x00E0); // Enable Tone2, tuning gain 48
 	BK4819_WriteRegister(BK4819_REG_72, (uint16_t)(Params->BaudRate * 10.32444));
 										
-	// Set up FSK, don't bother writing REG_59 as it is TX/RX state
+	// Set up FSK
 	BK4819_WriteRegister(BK4819_REG_58, 0
 		| BK4819_REG_58_ENABLE_FSK 
 		| BK4819_REG_58_FSK_RX_GAIN_0
@@ -1048,6 +1048,12 @@ void BK4819_ConfigureFSK(BK4819_ModemParams *Params)
 		| Params->TxMode
 		| Params->RxMode
 		| Params->RxBandwidth);
+
+	BK4819_WriteRegister(BK4819_REG_59, 0 
+		| Params->PreambleLength 
+		| Params->SyncLength
+		| (Params->InvertTx == 1 ? BK4819_REG_59_FSK_INVERT_TX : BK4819_REG_59_FSK_NOINVERT_TX)
+		| (Params->InvertRx == 1 ? BK4819_REG_59_FSK_INVERT_RX : BK4819_REG_59_FSK_NOINVERT_RX));
 
 	// First two sync bytes
 	BK4819_WriteRegister(BK4819_REG_5A, 0
@@ -1078,11 +1084,9 @@ void BK4819_StartTransmitFSK(BK4819_ModemParams *Params, uint8_t *Buf, uint16_t 
 		return;
 	}
 
-	uint16_t REG_59_TEMPLATE = 0 
-		| Params->PreambleLength 
-		| Params->SyncLength;
-
 	// Clear FIFO
+	uint16_t REG_59_TEMPLATE = BK4819_ReadRegister(BK4819_REG_59);
+
 	BK4819_WriteRegister(BK4819_REG_59, REG_59_TEMPLATE
 		| BK4819_REG_59_FSK_CLEAR_TX_FIFO);
 	BK4819_WriteRegister(BK4819_REG_59, REG_59_TEMPLATE);

@@ -141,12 +141,14 @@ void BK4819_PlayDTMFEx(bool bLocalLoopback, char Code);
 
 typedef struct {
 	uint16_t BaudRate;
-	uint16_t PremableType;
-	uint16_t TxMode;
-	uint16_t RxMode;
-	uint16_t RxBandwidth;
-	uint16_t SyncLength;
-	uint16_t PreambleLength;
+	uint16_t PremableType : 2;
+	uint16_t TxMode : 3;
+	uint16_t RxMode : 3;
+	uint16_t RxBandwidth : 3;
+	uint16_t SyncLength : 1;
+	uint16_t PreambleLength: 8;
+	uint16_t  InvertTx : 1;
+	uint16_t  InvertRx : 1;
 	uint8_t  SyncBytes[4];
 } BK4819_ModemParams;
 
