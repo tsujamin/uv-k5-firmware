@@ -98,6 +98,9 @@ OBJS += ui/inputbox.o
 OBJS += ui/lock.o
 OBJS += ui/main.o
 OBJS += ui/menu.o
+ifeq ($(ENABLE_MODEM),1)
+OBJS += ui/modem.o
+endif
 OBJS += ui/rssi.o
 OBJS += ui/scanner.o
 OBJS += ui/status.o

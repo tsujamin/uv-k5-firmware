@@ -41,7 +41,7 @@
 #include "ui/welcome.h"
 
 #if defined(ENABLE_UART)
-static const char Version[] = "UV-K5 Firmware, Open Edition, OEFW-"GIT_HASH"\r\n";
+static const char Version[] = "UV-K5 Firmware, Tsujamin Edition, TSU-"GIT_HASH"\r\n";
 #endif
 
 void _putchar(char c)
@@ -76,7 +76,7 @@ void Main(void)
 #endif
 
 #if defined(ENABLE_MODEM)
-	Modem_Init();
+	Modem_Boot();
 #endif
 
 	// Not implementing authentic device checks

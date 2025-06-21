@@ -26,6 +26,9 @@ enum FUNCTION_Type_t {
 	FUNCTION_INCOMING   = 3U,
 	FUNCTION_RECEIVE    = 4U,
 	FUNCTION_POWER_SAVE = 5U,
+#if defined(ENABLE_MODEM)
+	FUNCTION_MODEM		= 6U,
+#endif
 };
 
 typedef enum FUNCTION_Type_t FUNCTION_Type_t;

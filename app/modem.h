@@ -17,7 +17,15 @@
 #ifndef APP_MODEM_H
 #define APP_MODEM_H
 
-void Modem_Init(void);
+#include <stdbool.h>
+#include "driver/keyboard.h"
 
+void Modem_Boot(void);
+
+void Modem_Init();
+
+void Modem_HandleInterupts(uint16_t InteruptMask);
+
+void Modem_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld);
 
 #endif

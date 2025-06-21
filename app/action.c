@@ -193,6 +193,16 @@ void ACTION_FM(void)
 }
 #endif
 
+#if defined(ENABLE_MODEM)
+void ACTION_Modem(void)
+{
+	FUNCTION_Select(FUNCTION_MODEM);
+	gRequestDisplayScreen = DISPLAY_MODEM;
+
+	return;
+}
+#endif
+
 void ACTION_Handle(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 {
 	uint8_t Short;
@@ -267,6 +277,11 @@ void ACTION_Handle(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 	case 8:
 #if defined(ENABLE_TX1750)
 		ACTION_AlarmOr1750(true);
+#endif
+		break;
+	case 9:
+#if defined(ENABLE_MODEM)
+		ACTION_Modem();
 #endif
 		break;
 	}

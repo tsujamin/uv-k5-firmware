@@ -30,6 +30,9 @@ enum GUI_DisplayType_t {
 #if defined(ENABLE_AIRCOPY)
 	DISPLAY_AIRCOPY	= 0x04U,
 #endif
+#if defined(ENABLE_MODEM)
+	DISPLAY_MODEM  = 0x05U,
+#endif
 	DISPLAY_INVALID	= 0xFFU,
 };
 

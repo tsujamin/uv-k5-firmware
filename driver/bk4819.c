@@ -1028,10 +1028,116 @@ void BK4819_PlayDTMFEx(bool bLocalLoopback, char Code)
 
 #if defined(ENABLE_MODEM)
 
-void BK4819_SetFSKTones(uint32_t Tone1Frequency, uint32_t Tone2Frequency)
+void BK4819_ConfigureFSK(BK4819_ModemParams *Params)
 {
-	BK4819_WriteRegister(BK4819_REG_71, (uint16_t)(Tone1Frequency * 10.32444));
-	BK4819_WriteRegister(BK4819_REG_72, (uint16_t)(Tone2Frequency * 10.32444));
+	if (Params == 0)
+	{
+		return;
+	}
+
+	// REG_72 is both the TONE2 frequency (for DTMF) and the BAUD rate for FSK mode.
+	// From BK4819_SetupAircopy (unknown purpose)
+	BK4819_WriteRegister(BK4819_REG_70, 0x00E0); // Enable Tone2, tuning gain 48
+	BK4819_WriteRegister(BK4819_REG_72, (uint16_t)(Params->BaudRate * 10.32444));
+										
+	// Set up FSK, don't bother writing REG_59 as it is TX/RX state
+	BK4819_WriteRegister(BK4819_REG_58, 0
+		| BK4819_REG_58_ENABLE_FSK 
+		| BK4819_REG_58_FSK_RX_GAIN_0
+		| Params->PremableType
+		| Params->TxMode
+		| Params->RxMode
+		| Params->RxBandwidth);
+
+	// First two sync bytes
+	BK4819_WriteRegister(BK4819_REG_5A, 0
+		| ((uint16_t)Params->SyncBytes[0] << 8)
+		| (uint16_t)Params->SyncBytes[1]); 
+	// Last two sync bytes
+	BK4819_WriteRegister(BK4819_REG_5B, 0
+		| ((uint16_t)Params->SyncBytes[2] << 8)
+		| (uint16_t)Params->SyncBytes[3]);
+
+	// Disable the CRC for now
+	BK4819_WriteRegister(BK4819_REG_5C, 0
+		| 0x0000 // This field is unknown
+		| BK4819_REG_5C_FSK_DISABLE_CRC);
+
+	return;
 }
+
+void BK4819_StartTransmitFSK(BK4819_ModemParams *Params, uint8_t *Buf, uint16_t nBuf)
+{
+	if (Params == 0 || Buf == 0 || nBuf > 256)
+	{
+		// REG_5D can support 11bit lengths, but we currently don't 
+		// support it because the Tx FIFO 256B and we write it all-in-one.
+		//
+		// In futurue, we could BeginTramsmit, then have two interupt-fired
+		// TopUpTransmit and FinishTransmit which pushed more into the FIFO
+		return;
+	}
+
+	uint16_t REG_59_TEMPLATE = 0 
+		| Params->PreambleLength 
+		| Params->SyncLength;
+
+	// Clear FIFO
+	BK4819_WriteRegister(BK4819_REG_59, REG_59_TEMPLATE
+		| BK4819_REG_59_FSK_CLEAR_TX_FIFO);
+	BK4819_WriteRegister(BK4819_REG_59, REG_59_TEMPLATE);
+
+	// Set Data Length
+	BK4819_WriteRegister(BK4819_REG_5D, 0
+		| (nBuf & 0x00FF) << 8
+		| (nBuf & 0x0700) >> 3);
+
+	// Fill the Tx FIFO
+	for (uint16_t i = 0; i < nBuf; i += 2)
+	{
+		if ( i + 1 < nBuf )
+		{
+			BK4819_WriteRegister(BK4819_REG_5F, 0
+				| (uint16_t)Buf[i] << 8 
+				| (uint16_t)Buf[i+1] );
+		}
+		else
+		{
+			BK4819_WriteRegister(BK4819_REG_5F, 0
+				| (uint16_t)Buf[i] << 8 );	
+		}
+	}
+
+	// Enable Tx Interupts
+	// Note: In the future, this should append the FSK_TX_FINISHED not clear all
+	//       other interupts, and the interupt should be handled elsewhere.
+	uint16_t REG_3F = BK4819_ReadRegister(BK4819_REG_3F);
+	BK4819_WriteRegister( BK4819_REG_3F, 0 /*REG_3F*/
+		| BK4819_REG_3F_FSK_TX_FINISHED);
+
+	// Begin Tx and wait for interupt
+	BK4819_WriteRegister(BK4819_REG_59, REG_59_TEMPLATE
+		| BK4819_REG_59_FSK_ENABLE_TX);
+
+	// Note: there's no timeout implemented here yet.
+	while (1)
+	{
+		// Has an interupt fired
+		if ( BK4819_ReadRegister(BK4819_REG_0C) & 1U )
+		{
+			break;
+		}
+	}
+
+	
+	BK4819_WriteRegister(BK4819_REG_02, 0);
+
+	// Tx finished based on interupt, Stop xmit
+	// TODO: Or start RX again
+	BK4819_WriteRegister(BK4819_REG_3F, REG_3F);
+	BK4819_WriteRegister(BK4819_REG_59, REG_59_TEMPLATE);
+
+	return;
+} 
 
 #endif

@@ -19,6 +19,9 @@
 #if defined(ENABLE_FMRADIO)
 #include "app/fm.h"
 #endif
+#if defined(ENABLE_MODEM)
+#include "app/modem.h"
+#endif
 #include "bsp/dp32g030/gpio.h"
 #include "dcs.h"
 #if defined(ENABLE_FMRADIO)
@@ -180,6 +183,11 @@ void FUNCTION_Select(FUNCTION_Type_t Function)
 			BK4819_DisableScramble();
 		}
 		break;
+#if defined(ENABLE_MODEM)
+	case FUNCTION_MODEM:
+		Modem_Init();
+		break;
+#endif
 	}
 	gBatterySaveCountdown = 1000;
 	gSchedulePowerSave = false;

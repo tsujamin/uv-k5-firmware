@@ -29,6 +29,9 @@
 #include "ui/inputbox.h"
 #include "ui/main.h"
 #include "ui/menu.h"
+#if defined(ENABLE_MODEM)
+#include "ui/modem.h"
+#endif
 #include "ui/scanner.h"
 #include "ui/ui.h"
 
@@ -59,6 +62,11 @@ void GUI_DisplayScreen(void)
 #if defined(ENABLE_AIRCOPY)
 	case DISPLAY_AIRCOPY:
 		UI_DisplayAircopy();
+		break;
+#endif
+#if defined(ENABLE_MODEM)
+	case DISPLAY_MODEM:
+		UI_DisplayModem();
 		break;
 #endif
 	default:

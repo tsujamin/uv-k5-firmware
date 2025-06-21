@@ -1,5 +1,5 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
+/* Copyright 2025 Benjamin Roberts
+ * https://github.com/tsujamin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,20 @@
  *     limitations under the License.
  */
 
-#ifndef APP_ACTION_H
-#define APP_ACTION_H
+#include <string.h>
+#include "driver/st7565.h"
+#include "ui/helper.h"
+#include "ui/modem.h"
 
-#include "driver/keyboard.h"
+void UI_DisplayModem(void)
+{
+    const char *szModem = "MODEM";
 
-void ACTION_Power(void);
-void ACTION_Scan(bool bFlag);
-void ACTION_Vox(void);
-void ACTION_FM(void);
-#if defined(ENABLE_MODEM)
-void ACTION_Modem(void);
-#endif
+    memset(gFrameBuffer, 0, sizeof(gFrameBuffer));
 
-void ACTION_Handle(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld);
+    UI_PrintString(szModem, 2, 127, 0, 8, true);
 
-#endif
+    ST7565_BlitFullScreen();
 
+    return;
+}

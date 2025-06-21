@@ -27,6 +27,9 @@
 #include "app/generic.h"
 #include "app/main.h"
 #include "app/menu.h"
+#if defined(ENABLE_MODEM)
+#include "app/modem.h"
+#endif
 #include "app/scanner.h"
 #if defined(ENABLE_UART)
 #include "app/uart.h"
@@ -576,6 +579,12 @@ void APP_CheckRadioInterrupts(void)
 				g_FSK_Buffer[gFSKWriteIndex++] = BK4819_ReadRegister(BK4819_REG_5F);
 			}
 			AIRCOPY_StorePacket();
+		}
+#endif
+#if defined(ENABLE_MODEM)
+		if(Mask && gCurrentFunction == FUNCTION_MODEM)
+		{
+			Modem_HandleInterupts(Mask);
 		}
 #endif
 	}
@@ -1517,6 +1526,10 @@ static void APP_ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 			case DISPLAY_AIRCOPY:
 				AIRCOPY_ProcessKeys(Key, bKeyPressed, bKeyHeld);
 				break;
+#endif
+#if defined(ENABLE_MODEM)
+			case DISPLAY_MODEM:
+				Modem_ProcessKeys(Key, bKeyPressed, bKeyHeld);
 #endif
 			default:
 				break;

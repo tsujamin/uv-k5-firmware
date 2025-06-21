@@ -137,5 +137,23 @@ void BK4819_GetVoxAmp(uint16_t *pResult);
 void BK4819_SetScrambleFrequencyControlWord(uint32_t Frequency);
 void BK4819_PlayDTMFEx(bool bLocalLoopback, char Code);
 
+#if defined(ENABLE_MODEM)
+
+typedef struct {
+	uint16_t BaudRate;
+	uint16_t PremableType;
+	uint16_t TxMode;
+	uint16_t RxMode;
+	uint16_t RxBandwidth;
+	uint16_t SyncLength;
+	uint16_t PreambleLength;
+	uint8_t  SyncBytes[4];
+} BK4819_ModemParams;
+
+void BK4819_ConfigureFSK(BK4819_ModemParams *Params);
+void BK4819_StartTransmitFSK(BK4819_ModemParams *Params, uint8_t *Buf, uint16_t nBuf);
+
+#endif 
+
 #endif
 

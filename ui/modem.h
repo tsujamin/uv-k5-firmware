@@ -1,5 +1,5 @@
-/* Copyright 2023 Dual Tachyon
- * https://github.com/DualTachyon
+/* Copyright 2025 Benjamin Roberts
+ * https://github.com/tsujamin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,10 @@
  *     limitations under the License.
  */
 
-#ifndef APP_ACTION_H
-#define APP_ACTION_H
+#ifndef UI_MODEM_H
+#define UI_MODEM_H
 
-#include "driver/keyboard.h"
-
-void ACTION_Power(void);
-void ACTION_Scan(bool bFlag);
-void ACTION_Vox(void);
-void ACTION_FM(void);
-#if defined(ENABLE_MODEM)
-void ACTION_Modem(void);
-#endif
-
-void ACTION_Handle(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld);
+void UI_DisplayModem(void);
 
 #endif
 
