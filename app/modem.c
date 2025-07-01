@@ -28,58 +28,41 @@
 #error "Must ENABLE_UART to ENABLE_MODEM"
 #endif
 
-uint16_t gModemPacket [36] = { 0x55, 0xff, 0x55, 0x01,
-                               0x55, 0xff, 0x55, 0x01,
-                               0x55, 0xff, 0x55, 0x01,
-                               0x55, 0xff, 0x55, 0x01,
-                               0x55, 0xff, 0x55, 0x01,
-                               0x55, 0xff, 0x55, 0x01,
-                               0x55, 0xff, 0x55, 0x01,
-                               0x55, 0xff, 0x55, 0x01,
-                               0x55, 0xff, 0x55, 0x01 };
+typedef struct {
+    bool               UARTLoggingState : 1;
+    uint16_t           PacketBuffer[36];
+    BK4819_ModemParams ModemParams;
+} ModemState;
 
-// uint8_t gModemPacket[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//                          0xff, 0xff, 0xff, 0xff };
-
-BK4819_ModemParams gModemParameters = {
-    .BaudRate       = 1200,
-    .PreambleLength = BK4819_REG_59_FSK_PREAMBLE_LENGTH_7B,
-    .SyncLength     = BK4819_REG_59_FSK_SYNC_LENGTH_2B,
-    .RxBandwidth    = BK4819_REG_58_FSK_RX_BANDWIDTH_FSK_1200,
-    .TxMode         = BK4819_REG_58_FSK_TX_MODE_FSK_1200,
-    .RxMode         = BK4819_REG_58_FSK_RX_MODE_FSK_1200,
-    .SyncBytes      = {0x55, 0x44, 0x33, 0x22},
-    .TxMode         = 0,
-    .RxMode         = 0
+ModemState gModemState = {
+    .UARTLoggingState = 0,
+    .PacketBuffer = { 0x55, 0xff, 0x55, 0x01,
+                      0x55, 0xff, 0x55, 0x01,
+                      0x55, 0xff, 0x55, 0x01,
+                      0x55, 0xff, 0x55, 0x01,
+                      0x55, 0xff, 0x55, 0x01,
+                      0x55, 0xff, 0x55, 0x01,
+                      0x55, 0xff, 0x55, 0x01,
+                      0x55, 0xff, 0x55, 0x01,
+                      0x55, 0xff, 0x55, 0x01 },
+    .ModemParams = {
+        .BaudRate       = 1200,
+        .PreambleLength = BK4819_REG_59_FSK_PREAMBLE_LENGTH_7B,
+        .SyncLength     = BK4819_REG_59_FSK_SYNC_LENGTH_2B,
+        .RxBandwidth    = BK4819_REG_58_FSK_RX_BANDWIDTH_FSK_1200,
+        .TxMode         = BK4819_REG_58_FSK_TX_MODE_FSK_1200,
+        .RxMode         = BK4819_REG_58_FSK_RX_MODE_FSK_1200,
+        .SyncBytes      = {0x55, 0x44, 0x33, 0x22},
+        .TxMode         = 0,
+        .RxMode         = 0
+    }
 };
-
-
 
 void Modem_Boot(void)
 {
 #if defined(MODEM_DEBUG)
     const char szMsg[] = "Modem_Boot()\r\n";
-    UART_Send(szMsg, sizeof(szMsg));
+    UART_LogSend(szMsg, sizeof(szMsg));
     
     // Dump modem registers to UART
     uint16_t rReg = 0;
@@ -91,31 +74,47 @@ void Modem_Boot(void)
         rReg = BK4819_ReadRegister(BK4819_REG_00 + i);
         cBuf = snprintf(szBuf, sizeof(szBuf), "BK4819_REG_%02hX=0x%04hX\r\n", i, rReg);
         
-        UART_Send(szBuf, cBuf + 1);
+        UART_LogSend(szBuf, cBuf + 1);
     }
 #endif
+
+    // Cache initial UART logging state.
+    gModemState.UARTLoggingState = UART_IsLogEnabled;
 
     return;
 }
 
 void Modem_Init()
 {
-#if defined(MODEM_DEBUG)
-    const char szMsg[] = "Modem_Init()\r\n";
-    UART_Send(szMsg, sizeof(szMsg));
-#endif
+    // Disable UART logging so the modem isn't interupted.
+    gModemState.UARTLoggingState = UART_IsLogEnabled;
+    UART_IsLogEnabled = false;
 
     // Set up the radio
     RADIO_SelectVfos();
 	RADIO_SetupRegisters(false); // TODO: this probably needs to be rewritten for Modem.
 
     // Initialise the FSK interupts etc
-    BK4819_ConfigureFSK(&gModemParameters);
+    BK4819_ConfigureFSK(&gModemState.ModemParams);
 
     // Beep and show the UI
     gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP;
 
     return;
+}
+
+void Modem_Exit()
+{
+    // Resture UART logging
+    if (gModemState.UARTLoggingState == true)
+    {
+        UART_IsLogEnabled = true;
+    }
+
+    // Return to the main/foreground display/function.
+    FUNCTION_Select(FUNCTION_FOREGROUND);
+    gRequestDisplayScreen = DISPLAY_MAIN;
+    gFlagReconfigureVfos = true;
 }
 
 void Modem_HandleInterupts(uint16_t InteruptMask)
@@ -125,14 +124,9 @@ void Modem_HandleInterupts(uint16_t InteruptMask)
 
 void Modem_TestTx(void)
 {
-#if defined(MODEM_DEBUG)
-    const char szMsg[] = "Modem_TestTx()\r\n";
-    UART_Send(szMsg, sizeof(szMsg));
-#endif
-
     RADIO_SetTxParameters();
     BK4819_EnableTXLink();
-    BK4819_StartTransmitFSK(&gModemParameters, (uint8_t*)gModemPacket, sizeof(gModemPacket));
+    BK4819_StartTransmitFSK(&gModemState.ModemParams, (uint8_t*)gModemState.PacketBuffer, sizeof(gModemState.PacketBuffer));
 	BK4819_SetupPowerAmplifier(0, 0);
 	BK4819_ToggleGpioOut(BK4819_GPIO1_PIN29_PA_ENABLE, false);
 
@@ -146,53 +140,50 @@ void Modem_TestTx(void)
 //
 void Modem_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
 {
-    // Return to the main/foreground display/function.
-    FUNCTION_Select(FUNCTION_FOREGROUND);
-    gRequestDisplayScreen = DISPLAY_MAIN;
-    gFlagReconfigureVfos = true;
+    Modem_Exit();
 
     return;
 }
 
+#if defined(MODEM_DEBUG)
 void UpdateParameter(KEY_Code_t Key)
 {
     // This is a hacky way to sweep particular registry values using the keypad
     if (Key > KEY_9) {
         return;
     }
-#if defined(MODEM_DEBUG)
     // Preamble Length
-    // gModemParameters.PreambleLength = Key << BK4819_REG_59_SHIFT_FSK_PREAMBLE_LENGTH;
+    // gModemState.ModemParams.PreambleLength = Key << BK4819_REG_59_SHIFT_FSK_PREAMBLE_LENGTH;
     
     // Baud rate
-    // gModemParameters.BaudRate = (Key == KEY_2) ? 2400 : 1200;
+    // gModemState.ModemParams.BaudRate = (Key == KEY_2) ? 2400 : 1200;
     
     // Tx Mode (3 bits, so map 0->7)
     // if ( Key <= 0b111 )
     // {
-    //     gModemParameters.TxMode = Key << BK4819_REG_58_SHIFT_FSK_TX_MODE;
+    //     gModemState.ModemParams.TxMode = Key << BK4819_REG_58_SHIFT_FSK_TX_MODE;
     // }
 
     // Preamble Type
     // if ( Key <= 0b11 )
     // {
-    //     gModemParameters.PremableType = Key << BK4819_REG_58_SHIFT_FSK_PREAMBLE_TYPE;
+    //     gModemState.ModemParams.PremableType = Key << BK4819_REG_58_SHIFT_FSK_PREAMBLE_TYPE;
     // }
 
     // Inversion
     // if (Key == KEY_8)
     // {
-    //     gModemParameters.InvertTx = 0;
+    //     gModemState.ModemParams.InvertTx = 0;
     // }
     // else if (Key == KEY_9)
     // {
-    //     gModemParameters.InvertTx = 1;
+    //     gModemState.ModemParams.InvertTx = 1;
     // }
 
     // The unknown 2 bits in REG_58
     // if (Key <= 0b11)
     // {
-    //     gModemParameters.REG_58_67_UNKNOWN = Key;
+    //     gModemState.ModemParams.REG_58_67_UNKNOWN = Key;
     // }
 
     // The unknown 3 bits in REG_59
@@ -202,44 +193,44 @@ void UpdateParameter(KEY_Code_t Key)
     // 0b111 is modulates 1010101010
     if (Key <= 0b111)
     {
-        gModemParameters.REG_59_02_UNKNOWN = Key;
+        gModemState.ModemParams.REG_59_02_UNKNOWN = Key;
     }
 
     // Sweep bits of the 5C register
     // if (Key <= 0b111)
     // {
     //     // Nothing obvious
-    //     // gModemParameters.REG_5C_UNKNOWN = (Key << 0) & ~((uint16_t)BK4819_REG_5C_FSK_ENABLE_CRC);
-    //     gModemParameters.REG_5C_UNKNOWN = ((uint16_t)Key << 13) & ~((uint16_t)BK4819_REG_5C_FSK_ENABLE_CRC);
+    //     // gModemState.ModemParams.REG_5C_UNKNOWN = (Key << 0) & ~((uint16_t)BK4819_REG_5C_FSK_ENABLE_CRC);
+    //     gModemState.ModemParams.REG_5C_UNKNOWN = ((uint16_t)Key << 13) & ~((uint16_t)BK4819_REG_5C_FSK_ENABLE_CRC);
     // } else if (Key == KEY_8)
     // {
     //     // From MDC1200 
-    //     gModemParameters.REG_5C_UNKNOWN = 0xAA30;
+    //     gModemState.ModemParams.REG_5C_UNKNOWN = 0xAA30;
     // } else if (Key == KEY_9)
     // {
     //     // From AirCopy, but withour CRC
-    //     gModemParameters.REG_5C_UNKNOWN = 0x5625 & ~((uint16_t)BK4819_REG_5C_FSK_ENABLE_CRC);
+    //     gModemState.ModemParams.REG_5C_UNKNOWN = 0x5625 & ~((uint16_t)BK4819_REG_5C_FSK_ENABLE_CRC);
     // }
     // else
     // {
-    //     gModemParameters.REG_5C_UNKNOWN = 0;
+    //     gModemState.ModemParams.REG_5C_UNKNOWN = 0;
     // }
 
     if (Key == KEY_9)
     {
 
-        gModemParameters.Scramble = 1;
+        gModemState.ModemParams.Scramble = 1;
     }
     else
     {
-        gModemParameters.Scramble = 0;
+        gModemState.ModemParams.Scramble = 0;
     }
-#endif
-
-    BK4819_ConfigureFSK(&gModemParameters);
-
+    
+    BK4819_ConfigureFSK(&gModemState.ModemParams);
+    
     return;
 }
+#endif
 
 void Modem_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 {
@@ -250,8 +241,10 @@ void Modem_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 	case KEY_8: case KEY_9:
         if (bKeyPressed)
         {
+#if defined(MODEM_DEBUG)
             UpdateParameter(Key);
             Modem_TestTx();
+#endif
         }
 		break;
 	case KEY_MENU:

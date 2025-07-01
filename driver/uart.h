@@ -19,6 +19,9 @@
 #define DRIVER_UART_H
 
 #include <stdint.h>
+#include <stdbool.h>
+
+extern bool UART_IsLogEnabled;
 
 extern uint8_t UART_DMA_Buffer[256];
 

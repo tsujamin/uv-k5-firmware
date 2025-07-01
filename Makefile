@@ -9,7 +9,7 @@ ENABLE_SWD := 0
 ENABLE_TX1750 := 0
 ENABLE_UART := 1
 ENABLE_MODEM := 1
-ENABLE_MODEM_DEBUG := 0
+ENABLE_MODEM_DEBUG := 1
 
 K5PROG_DEVICE := /dev/cu.usbserial-110
 
@@ -160,7 +160,7 @@ ifeq ($(ENABLE_MODEM),1)
 CFLAGS += -DENABLE_MODEM
 endif
 ifeq ($(ENABLE_MODEM_DEBUG),1)
-CFLAGS += -DENABLE_MODEM_DEBUG
+CFLAGS += -DMODEM_DEBUG
 endif
 LDFLAGS = -mcpu=cortex-m0 -nostartfiles -Wl,-T,firmware.ld
 
