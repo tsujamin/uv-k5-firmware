@@ -147,9 +147,15 @@ typedef struct {
 	uint16_t RxBandwidth : 3;
 	uint16_t SyncLength : 1;
 	uint16_t PreambleLength: 8;
-	uint16_t  InvertTx : 1;
-	uint16_t  InvertRx : 1;
 	uint8_t  SyncBytes[4];
+#if defined (MODEM_DEBUG)
+	uint16_t InvertTx : 1;
+	uint16_t InvertRx : 1;
+	uint16_t REG_58_67_UNKNOWN : 2;
+	uint16_t REG_59_02_UNKNOWN : 3;
+	uint16_t REG_5C_UNKNOWN;
+	uint16_t Scramble : 1;
+#endif
 } BK4819_ModemParams;
 
 void BK4819_ConfigureFSK(BK4819_ModemParams *Params);

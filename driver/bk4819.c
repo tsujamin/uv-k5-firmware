@@ -1047,13 +1047,22 @@ void BK4819_ConfigureFSK(BK4819_ModemParams *Params)
 		| Params->PremableType
 		| Params->TxMode
 		| Params->RxMode
-		| Params->RxBandwidth);
+		| Params->RxBandwidth
+#if defined (MODEM_DEBUG)
+		| Params->REG_58_67_UNKNOWN << 6
+#endif
+	);
 
 	BK4819_WriteRegister(BK4819_REG_59, 0 
 		| Params->PreambleLength 
 		| Params->SyncLength
+#if defined (MODEM_DEBUG)
 		| (Params->InvertTx == 1 ? BK4819_REG_59_FSK_INVERT_TX : BK4819_REG_59_FSK_NOINVERT_TX)
-		| (Params->InvertRx == 1 ? BK4819_REG_59_FSK_INVERT_RX : BK4819_REG_59_FSK_NOINVERT_RX));
+		| (Params->InvertRx == 1 ? BK4819_REG_59_FSK_INVERT_RX : BK4819_REG_59_FSK_NOINVERT_RX)
+		| Params->REG_59_02_UNKNOWN
+		| (Params->Scramble == 1 ? BK4819_REG_59_FSK_ENABLE_SCRAMBLE : BK4819_REG_59_FSK_DISABLE_SCRAMBLE)
+#endif
+	);
 
 	// First two sync bytes
 	BK4819_WriteRegister(BK4819_REG_5A, 0
@@ -1066,7 +1075,9 @@ void BK4819_ConfigureFSK(BK4819_ModemParams *Params)
 
 	// Disable the CRC for now
 	BK4819_WriteRegister(BK4819_REG_5C, 0
-		| 0x0000 // This field is unknown
+#if defined (MODEM_DEBUG)
+		| Params->REG_5C_UNKNOWN // This field is unknow
+#endif
 		| BK4819_REG_5C_FSK_DISABLE_CRC);
 
 	return;
