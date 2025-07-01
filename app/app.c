@@ -1146,6 +1146,9 @@ void APP_TimeSlice500ms(void)
 #if defined(ENABLE_AIRCOPY)
 				gScreenToDisplay != DISPLAY_AIRCOPY &&
 #endif
+#if defined(ENABLE_MODEM)
+				gScreenToDisplay != DISPLAY_MODEM &&
+#endif
 				(gScreenToDisplay != DISPLAY_SCANNER || (gScanCssState >= SCAN_CSS_STATE_FOUND))) {
 				if (gEeprom.AUTO_KEYPAD_LOCK && gKeyLockCountdown && !gDTMF_InputMode) {
 					gKeyLockCountdown--;
